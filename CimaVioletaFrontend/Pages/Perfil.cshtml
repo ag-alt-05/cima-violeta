@@ -1,0 +1,127 @@
+﻿@page "{nombreUsuario?}"
+@model PerfilModel
+@{
+    ViewData["Title"] = "Perfil";
+}
+<div id="toast-mensaje" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(215, 108, 220, 0.95); color: white; padding: 15px 30px; border-radius: 15px; font-weight: bold; font-size: 1.5rem; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; transition: opacity 0.3s;"></div>
+<div class="ventana-perfil">
+<div class="header-perfil"><span id="header-nombre">@@anonimo</span><div id="header-fecha" style="display: none; margin-left: auto; font-size: 0.8rem; opacity: 0.8;"><i class="bi bi-calendar-event"></i> <span id="txt-fecha-creacion"></span></div></div>
+<div id="vista-cargando" class="vista-perfil" style="justify-content: center; align-items: center; height: 100%;"><div class="spinner"></div><p style="color: white; margin-top: 15px;">Cargando perfil...</p></div>
+<div id="vista-bloqueado" class="vista-perfil" style="display: none; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center; flex-direction: column;"><i class="bi bi-shield-x" style="font-size: 5rem; color: #f44336; margin-bottom: 20px;"></i><h2 style="color: white; margin-bottom: 10px;">Cuenta bloqueada</h2><p style="color: #aaa; margin-bottom: 20px;">Tu cuenta ha sido bloqueada por un administrador.</p><button class="btn-opcion" style="background-color: #444; color: white; width: 100%; justify-content: center;" onclick="cerrarSesion()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</button></div>
+<div id="vista-error" class="vista-perfil" style="display: none; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center;"><i class="bi bi-person-x-fill" style="font-size: 5rem; color: #d76cdc; margin-bottom: 20px;"></i><h2 style="color: white; margin-bottom: 10px;">Perfil no encontrado</h2><p style="color: #aaa; margin-bottom: 20px;">Este usuario no existe o fue eliminado.</p><button class="btn-opcion" style="background-color: #d76cdc; color: white; width: 100%; justify-content: center; margin-bottom: 15px;" onclick="window.location.href='/'">Volver al inicio</button><div id="btn-cerrar-sesion-error" style="display: none; width: 100%;"><button class="btn-opcion" style="background-color: #444; color: white; width: 100%; justify-content: center;" onclick="cerrarSesion()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión actual</button></div></div>
+<div id="vista-invitado" class="vista-perfil" style="display: none;"><div class="contenedor-foto"><div class="foto-perfil"><i class="bi bi-person-fill" style="font-size: 4rem; color: #ccc;"></i></div></div><div class="opciones-perfil" style="margin-top: 20px;"><button class="btn-opcion" onclick="mostrarVista('registro')"><i class="bi bi-person-plus-fill"></i> Crear cuenta</button><button class="btn-opcion" style="background-color: #d76cdc; color: white;" onclick="mostrarVista('login')"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</button></div></div>
+<div id="vista-registro" class="vista-perfil" style="display: none; padding: 20px;"><h3 style="color: white; margin-bottom: 15px;">Crear Cuenta</h3><form id="form-registro" onsubmit="event.preventDefault(); registrarUsuario();"><input type="text" id="reg-nombre" placeholder="Nombre visible" required><input type="text" id="reg-acceso" placeholder="Usuario (Ej. juan_v)" required><input type="password" id="reg-pass" placeholder="Contraseña" required><input type="text" id="reg-foto" placeholder="URL de tu foto (Opcional)"><div class="form-botones" style="margin-top: 20px;"><button type="button" class="btn-cancelar" onclick="mostrarVista('invitado')">Cancelar</button><button type="submit" class="btn-enviar" id="btn-registro" style="background-color: #d76cdc;">Registrarse</button></div></form><div id="msj-registro" style="color: white; margin-top: 15px; text-align: center;"></div></div>
+<div id="vista-login" class="vista-perfil" style="display: none; padding: 20px;"><h3 style="color: white; margin-bottom: 15px;">Iniciar Sesión</h3><form id="form-login" onsubmit="event.preventDefault(); iniciarSesion();"><input type="text" id="log-acceso" placeholder="Usuario" required><input type="password" id="log-pass" placeholder="Contraseña" required><div class="form-botones" style="margin-top: 20px;"><button type="button" class="btn-cancelar" onclick="mostrarVista('invitado')">Cancelar</button><button type="submit" class="btn-enviar" id="btn-login" style="background-color: #d76cdc;">Entrar</button></div></form><div id="msj-login" style="color: white; margin-top: 15px; text-align: center;"></div></div>
+<div id="vista-logueado" class="vista-perfil" style="display: none;">
+    <div class="contenedor-foto">
+        <div class="foto-perfil">
+            <img id="img-perfil-mostrar" src="" style="display: none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            <i id="icon-perfil-mostrar" class="bi bi-person-fill" style="font-size: 4rem; color: #ccc;">
+                </i>
+                </div>
+                </div>
+                <div class="opciones-perfil">
+                    <div style="color: white; margin-bottom: 15px; padding: 0 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.2rem;" id="lbl-nombre">Cargando...</h4>
+                            <p style="margin: 5px 0 0 0; opacity: 0.7; font-size: 0.9rem;" id="lbl-acceso">@@</p>
+                            </div>
+                            <div style="background: #d76cdc; padding: 5px 10px; border-radius: 10px; font-weight: bold; font-size: 1.1rem;" id="lbl-votos-totales">0 pts</div>
+                            </div>
+                            <div id="area-edicion" style="padding: 0 10px; margin-bottom: 20px; display: none;">
+                                <textarea id="area-descripcion" placeholder="Agrega una descripción sobre ti..." style="width: 100%; background: #222; color: white; border: none; padding: 10px; border-radius: 10px; min-height: 60px; font-family: inherit;"></textarea>
+                                <input type="text" id="input-foto" placeholder="Cambiar URL de foto de perfil" style="width: 100%; margin-top: 10px; padding: 10px; border-radius: 10px; border: none;"><button class="btn-opcion" id="btn-guardar-perfil" style="margin-top: 10px; background-color: #d76cdc; color: white; justify-content: center; font-size: 0.9rem;" onclick="guardarPerfil()"><i class="bi bi-save-fill"></i> Guardar cambios</button></div><div id="area-lectura" style="padding: 0 10px; margin-bottom: 20px; display: none;"><p id="txt-descripcion-publica" style="color: #aaa; font-style: italic; background: #222; padding: 10px; border-radius: 10px;"></p></div><h4 style="color: white; padding: 0 10px; margin-bottom: 10px;">Comentarios de <span id="lbl-acceso-comentarios"></span></h4><div id="lista-comentarios-perfil" style="padding: 0 10px; color: #aaa; font-size: 0.9rem;"><p style='background:#222; padding:10px; border-radius:10px;'>Aún no hay comentarios.</p></div><div id="btn-cerrar-sesion" style="padding: 20px 10px 100px 10px; display: none;"><button class="btn-opcion" style="background-color: #444; color: white; justify-content: center;" onclick="cerrarSesion()"><i style="color: white;" class="bi bi-box-arrow-left"></i> Cerrar sesión</button>
+                                    </div>
+</div>
+</div>
+</div>
+<script>
+let usuarioActual = null;
+const API_URL = "https://api.4chan.world/api/usuarios"; 
+const usuarioUrl = "@Model.NombreUsuarioUrl";
+document.addEventListener("DOMContentLoaded", function () {
+document.getElementById('bottom-nav').style.display = 'flex';
+mostrarVista('cargando');
+const sesionGuardada = localStorage.getItem('usuarioRutaVioleta');
+if (sesionGuardada) { usuarioActual = JSON.parse(sesionGuardada); }
+if (usuarioUrl) { cargarPerfilPublico(usuarioUrl); } 
+else if (usuarioActual) { window.location.href = `/Perfil/${usuarioActual.nombre_acceso}`; } 
+else { mostrarVista('invitado'); }
+});
+function mostrarVista(nombre) { document.querySelectorAll('.vista-perfil').forEach(v => v.style.display = 'none'); document.getElementById(`vista-${nombre}`).style.display = 'flex'; }
+function cargarPerfilPublico(nombreUrl) {
+fetch(`${API_URL}/perfil/${nombreUrl}`).then(res => {
+if (res.status === 404) { if (localStorage.getItem('usuarioRutaVioleta')) { document.getElementById('btn-cerrar-sesion-error').style.display = 'block'; } mostrarVista('error'); return null; }
+return res.json();
+}).then(data => {
+if (!data) return; 
+if (data.ok) {
+if (data.usuario.bloqueado && usuarioActual && usuarioActual.nombre_acceso === data.usuario.nombre_acceso) { mostrarVista('bloqueado'); return; }
+const esMiPerfil = usuarioActual && usuarioActual.nombre_acceso === data.usuario.nombre_acceso;
+cargarPerfil(data.usuario, esMiPerfil); cargarComentariosPerfil(nombreUrl); 
+}
+}).catch(err => { if (localStorage.getItem('usuarioRutaVioleta')) { document.getElementById('btn-cerrar-sesion-error').style.display = 'block'; } mostrarVista('error'); });
+}
+function cargarPerfil(usuario, esMiPerfil) {
+document.getElementById('header-nombre').innerText = String.fromCharCode(64) + usuario.nombre_acceso; document.getElementById('lbl-nombre').innerText = usuario.nombre_usuario;
+document.getElementById('lbl-acceso').innerText = String.fromCharCode(64) + usuario.nombre_acceso; document.getElementById('lbl-acceso-comentarios').innerText = String.fromCharCode(64) + usuario.nombre_acceso;
+document.getElementById('txt-fecha-creacion').innerText = usuario.fecha; document.getElementById('header-fecha').style.display = 'block';
+if (usuario.imagen_perfil) { document.getElementById('img-perfil-mostrar').src = usuario.imagen_perfil; document.getElementById('img-perfil-mostrar').style.display = 'block'; document.getElementById('icon-perfil-mostrar').style.display = 'none'; }
+if (esMiPerfil) {
+document.getElementById('area-descripcion').value = usuario.descripcion || ""; document.getElementById('area-edicion').style.display = 'block'; document.getElementById('area-lectura').style.display = 'none'; document.getElementById('btn-cerrar-sesion').style.display = 'block';
+} else {
+document.getElementById('txt-descripcion-publica').innerText = usuario.descripcion || "Sin descripción."; document.getElementById('area-edicion').style.display = 'none'; document.getElementById('area-lectura').style.display = 'block'; document.getElementById('btn-cerrar-sesion').style.display = 'none';
+}
+mostrarVista('logueado');
+}
+function cargarComentariosPerfil(nombre_acceso) {
+const contenedor = document.getElementById('lista-comentarios-perfil'); const sesion = JSON.parse(localStorage.getItem('usuarioRutaVioleta') || '{}'); const esAdmin = sesion.es_admin === true;
+fetch(`https://api.4chan.world/api/comentarios/usuario/${nombre_acceso}`).then(res => res.json()).then(data => {
+if (data.ok) {
+contenedor.innerHTML = ''; let votosTotales = 0;
+const comentariosVisibles = data.comentarios.filter(c => esAdmin || c.es_aprobado === true);
+comentariosVisibles.forEach(c => { votosTotales += (c.votos || 0); });
+document.getElementById('lbl-votos-totales').innerText = `${votosTotales} pts`;
+if (comentariosVisibles.length === 0) { contenedor.innerHTML = "<p style='background:#222; padding:10px; border-radius:10px;'>Aún no hay comentarios.</p>"; return; }
+comentariosVisibles.forEach(c => {
+let colorTexto = "#aaa"; let etiquetaAviso = "";
+if (esAdmin && c.es_aprobado !== true) { colorTexto = "#f44336"; etiquetaAviso = " <strong>(Pendiente/No aprobado)</strong>"; }
+const card = document.createElement('div'); card.style.cssText = "background: #222; padding: 10px; border-radius: 10px; margin-bottom: 10px;";
+card.innerHTML = `<div style="display: flex; justify-content: space-between; margin-bottom: 5px;"><span style="color: #ffc107; font-size: 0.9rem;">${getEstrellasVisuales(c.calificacion)}</span><span style="color: #666; font-size: 0.8rem;">${c.fecha} - <strong>${c.autobus}</strong></span></div><p style="margin: 0; font-size: 0.9rem; color: ${colorTexto};">${c.contenido} ${etiquetaAviso}</p>`;
+contenedor.appendChild(card);
+});
+}
+}).catch(err => { contenedor.innerHTML = "<p style='color:#f44336'>Error al cargar comentarios.</p>"; });
+}
+function getEstrellasVisuales(num) { let estrellas = ''; for (let i = 1; i <= 5; i++) estrellas += i <= num ? '★' : '☆'; return estrellas; }
+function registrarUsuario() {
+const btn = document.getElementById('btn-registro'); if (btn.disabled) return; const nombre = document.getElementById('reg-nombre').value; const acceso = document.getElementById('reg-acceso').value; const pass = document.getElementById('reg-pass').value; const foto = document.getElementById('reg-foto').value; const msj = document.getElementById('msj-registro');
+btn.disabled = true; btn.innerHTML = 'Creando...'; msj.innerHTML = 'Procesando...';
+fetch(`${API_URL}/registro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, acceso, pass, foto }) }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(res => {
+if (res.status === 200 && res.body.ok) { msj.innerHTML = `<span style="color: #4caf50;">¡Cuenta creada! Inicia sesión.</span>`; setTimeout(() => { mostrarVista('login'); btn.disabled = false; btn.innerHTML = 'Registrarse'; }, 1500); } else { msj.innerHTML = `<span style="color: #f44336;">${res.body.error}</span>`; btn.disabled = false; btn.innerHTML = 'Registrarse'; }
+}).catch(err => { msj.innerHTML = `<span style="color: #f44336;">Error de conexión.</span>`; btn.disabled = false; btn.innerHTML = 'Registrarse'; });
+}
+function iniciarSesion() {
+const btn = document.getElementById('btn-login'); if (btn.disabled) return; const acceso = document.getElementById('log-acceso').value; const pass = document.getElementById('log-pass').value; const msj = document.getElementById('msj-login');
+btn.disabled = true; btn.innerHTML = 'Entrando...'; msj.innerHTML = 'Validando...';
+fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acceso, pass }) }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(res => {
+if (res.status === 200 && res.body.ok) {
+usuarioActual = res.body.usuario; localStorage.setItem('usuarioRutaVioleta', JSON.stringify(usuarioActual));
+const esChof = (usuarioActual.es_conductor === true || usuarioActual.es_conductor === 1 || usuarioActual.es_conductor === "1" || usuarioActual.es_conductor === "true");
+if (esChof) { document.getElementById('toast-mensaje').innerText = `Bienvenido Chofer ${usuarioActual.nombre_usuario}`; document.getElementById('toast-mensaje').style.display = 'block'; document.getElementById('toast-mensaje').style.opacity = '1'; setTimeout(() => { window.location.href = "/"; }, 2500); } 
+else { window.location.href = "/Perfil/" + usuarioActual.nombre_acceso; }
+} else { msj.innerHTML = `<span style="color: #f44336;">${res.body.error || 'Error al iniciar sesión'}</span>`; btn.disabled = false; btn.innerHTML = 'Entrar'; }
+}).catch(err => { msj.innerHTML = `<span style="color: #f44336;">Error de conexión.</span>`; btn.disabled = false; btn.innerHTML = 'Entrar'; });
+}
+function cerrarSesion() { localStorage.removeItem('usuarioRutaVioleta'); usuarioActual = null; window.location.href = "/Perfil"; }
+function guardarPerfil() {
+const btn = document.getElementById('btn-guardar-perfil'); if (btn.disabled || !usuarioActual) return; const textoOriginal = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...'; const nuevaDesc = document.getElementById('area-descripcion').value; const nuevaFoto = document.getElementById('input-foto').value;
+fetch(`${API_URL}/actualizar/${usuarioActual.nombre_acceso}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ descripcion: nuevaDesc, foto: nuevaFoto }) }).then(res => res.json().then(data => ({ status: res.status, body: data }))).then(res => {
+if (res.status === 200 && res.body.ok) {
+btn.innerHTML = '<i class="bi bi-check-lg"></i> ¡Guardado!'; usuarioActual.descripcion = nuevaDesc; if(nuevaFoto) usuarioActual.imagen_perfil = nuevaFoto; localStorage.setItem('usuarioRutaVioleta', JSON.stringify(usuarioActual));
+if (nuevaFoto) { document.getElementById('img-perfil-mostrar').src = nuevaFoto; document.getElementById('img-perfil-mostrar').style.display = 'block'; document.getElementById('icon-perfil-mostrar').style.display = 'none'; document.getElementById('input-foto').value = ""; }
+setTimeout(() => { btn.innerHTML = textoOriginal; btn.disabled = false; }, 2000);
+} else { alert("Error: " + (res.body.error || "No se pudo guardar")); btn.innerHTML = textoOriginal; btn.disabled = false; }
+}).catch(err => { alert("Error de conexión al guardar el perfil."); btn.innerHTML = textoOriginal; btn.disabled = false; });
+}
+</script>

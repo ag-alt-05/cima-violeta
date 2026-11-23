@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\UABC\\Entornos Virtuales\\cima-violeta\\CimaVioletaFrontend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|c:\\uabc\\entornos virtuales\\cima-violeta\\cimavioletafrontend\\wwwroot\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|solutionrelative:wwwroot\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|c:\\uabc\\entornos virtuales\\cima-violeta\\cimavioletafrontend\\pages\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|solutionrelative:pages\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|c:\\uabc\\entornos virtuales\\cima-violeta\\cimavioletafrontend\\wwwroot\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{38841F52-983A-52F0-7D78-0BDACECEC895}|CimaVioletaFrontend.csproj|solutionrelative:wwwroot\\css\\style.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,11 +18,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\UABC\\Entornos Virtuales\\cima-violeta\\CimaVioletaFrontend\\Pages\\Index.cshtml",
               "RelativeDocumentMoniker": "Pages\\Index.cshtml",
@@ -40,13 +40,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "style.css",
               "DocumentMoniker": "C:\\UABC\\Entornos Virtuales\\cima-violeta\\CimaVioletaFrontend\\wwwroot\\css\\style.css",
               "RelativeDocumentMoniker": "wwwroot\\css\\style.css",
               "ToolTip": "C:\\UABC\\Entornos Virtuales\\cima-violeta\\CimaVioletaFrontend\\wwwroot\\css\\style.css",
               "RelativeToolTip": "wwwroot\\css\\style.css",
-              "ViewState": "AgIAABkAAAAAAAAAAAAtwDkAAAAOAAAAAAAAAA==",
+              "ViewState": "AgIAABwAAAAAAAAAAAAIwCgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2026-11-18T18:39:14.526Z",
               "EditorCaption": ""

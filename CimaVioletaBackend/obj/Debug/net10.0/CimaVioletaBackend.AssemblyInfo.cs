@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CimaVioletaBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e5f6e589937dfd627746bca49aa17d519ca583d2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c5f7e66af01db3afe69b6181a3842b95ef4c2176")]
 [assembly: System.Reflection.AssemblyProductAttribute("CimaVioletaBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CimaVioletaBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

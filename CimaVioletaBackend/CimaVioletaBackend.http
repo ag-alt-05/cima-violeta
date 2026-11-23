@@ -1,6 +1,0 @@
-@CimaVioletaBackend_HostAddress = http://localhost:5096
-
-GET {{CimaVioletaBackend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

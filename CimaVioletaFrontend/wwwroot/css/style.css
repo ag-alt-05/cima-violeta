@@ -133,11 +133,11 @@ body {
     max-width: 700px !important;
     background-color: #121212;
     border-radius: 20px;
-    padding: 25px;
+    padding: 20px;
     z-index: 500;
     display: none;
     flex-direction: column;
-    height: 45%;
+    height: 200px !important;
     transition: height 0.3s ease-in-out;
     box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
     border: 1px solid #333;
@@ -145,18 +145,18 @@ body {
 }
 
     .panel-rutas.ruta-seleccionada {
-        height: 22%;
+        height: 20%;
     }
 
     .panel-rutas.oculto {
-        height: 110px !important;
+        height: 100px !important;
     }
 
 .panel-rutas-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 55px;
+    margin-bottom: 10px;
     flex-shrink: 0;
     cursor: pointer;
 }

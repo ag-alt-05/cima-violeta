@@ -1,54 +1,93 @@
 # CimaVioleta
 
-> Plataforma de rutas de autobuses con comentarios, votos y detección de toxicidad.
+Plataforma de rutas de autobuses con geolocalización en tiempo real, sistema de comentarios, votos y detección de toxicidad mediante Inteligencia Artificial
 
-## Instrucciones para Ejecutar
+## Requisitos Previos
 
-### 1. Clonar el repositorio
+Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
-    git clone https://github.com/ag-alt-05/cima-violeta.git
+- Git
+- SQL Server y SQL Server Management Studio (SSMS)
+- Visual Studio 2026 (con la carga de trabajo de "Desarrollo web y ASP.NET")
+- Visual Studio Code 
+- Python 3.10+ (asegúrate de marcar "Add Python to PATH" durante la instalación)
 
-### 2. Base de datos
+## Instalación y Configuración
 
-Ejecuta `RutaVioleta.sql` en **SQL Server Management Studio 22**.
+### Paso 1: Clonar el repositorio
 
-### 3. Backend
+Abre una terminal o Símbolo del sistema y ejecuta:
 
-Abre `CimaVioletaBackend.slnx` en **Visual Studio 2026**.
+```bash
+git clone https://github.com/ag-alt-05/cima-violeta.git
+cd cima-violeta
+```
 
-### 4. Frontend
+### Paso 2: Configurar la Base de Datos
 
-Abre `CimaVioletaFrontend.slnx` en **Visual Studio 2026**.
+1. Abre **SQL Server Management Studio (SSMS)** y conéctate a tu servidor local (usualmente `.\SQLEXPRESS` o `localhost`).
+2. Abre el archivo `RutaVioleta.sql` que está en la raíz del proyecto.
+3. Ejecútalo (**F5**) para crear la base de datos, tablas, vistas, procedimientos almacenados y los datos de prueba.
 
-### 5. API de Toxicidad (Python)
+### Paso 3: Configurar el Backend (C#)
 
-1. Abre `api_toxicidad.py` en **Visual Studio Code**
-2. En la terminal, instala las dependencias:
+1. Abre el archivo `CimaVioletaBackend.slnx` en **Visual Studio 2026**.
+2. En el Explorador de soluciones, busca y abre el archivo `appsettings.json`.
+3. Modifica la cadena de conexión con el nombre de tu servidor SQL local:
 
-    pip install fastapi
-    pip install transformers
-    pip install torch
-    pip install uvicorn
+```json
+"ConnectionStrings": {
+  "ConexionRutaVioleta": "Server=TU_SERVIDOR_SQL;Database=RutaVioleta;Trusted_Connection=True;TrustServerCertificate=True;"
+}
+```
+
+> **Nota:** Si usas SQLEXPRESS, usualmente es `Server=.\SQLEXPRESS`. Si usas autenticación de SQL, agrega `User Id=sa;Password=tu_contraseña;`.
+
+4. Presiona **F5** para ejecutar. Anota el puerto en el que se abre (ej. `https://localhost:7123`).
+
+### Paso 4: Configurar el Frontend (ASP.NET Razor Pages)
+
+1. Abre el archivo `CimaVioletaFrontend.slnx` en **Visual Studio 2026** (puedes tener ambas soluciones abiertas a la vez).
+2. Verifica que la URL de la API en el frontend apunte a tu backend local.
+
+> **Nota:** Si estás probando en local, asegúrate de cambiar las URLs en los archivos `.cshtml` a `https://localhost:TU_PUERTO/api/...`.
+
+3. Presiona **F5** para ejecutar el frontend.
+
+### Paso 5: Configurar la API de Toxicidad (Python)
+
+1. Abre **Visual Studio Code**.
+2. Ve a **Archivo > Abrir Carpeta** y selecciona la carpeta raíz del proyecto (donde está `api_toxicidad.py`).
+3. Abre una terminal en VS Code (**Ctrl + ñ** o **Terminal > Nueva Terminal**).
+4. Crea un entorno virtual (opcional pero recomendado):
+
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+5. Instala las dependencias necesarias:
+
+```bash
+pip install fastapi uvicorn transformers torch
+```
 
 | Paquete | Función |
 |---------|---------|
-| fastapi | Framework de la API |
-| transformers | Carga el modelo de Hugging Face |
-| torch | Motor de inferencia |
-| uvicorn | Servidor de la API |
+| `fastapi` | Framework de la API |
+| `uvicorn` | Servidor que corre la API |
+| `transformers` | Carga el modelo de Hugging Face |
+| `torch` | Motor de inferencia |
 
-3. Ejecuta el archivo:
+6. Ejecuta el servidor de la IA:
 
-    python api_toxicidad.py
+```bash
+python api_toxicidad.py
+```
 
-> ⚠️ La primera vez descarga el modelo (~2 GB). Queda en cache y luego arranca rápido.
-
-### 6. Ejecutar todo
-
-| Proyecto | Dónde |
-|----------|-------|
-| CimaVioletaBackend | Visual Studio 2026 → F5 |
-| CimaVioletaFrontend | Visual Studio 2026 → F5 |
-| api_toxicidad.py | Terminal → python api_toxicidad.py |
-
-Los tres deben estar corriendo a la vez para que la base de datos y el backend se sincronicen.
+> ⚠️ **Advertencia:** La primera vez que lo ejecutes, descargará el modelo de Hugging Face de ~2 GB. Esto puede tardar varios minutos dependiendo de tu internet. Después quedará en caché y arrancará en segundos.   

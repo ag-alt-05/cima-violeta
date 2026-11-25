@@ -133,11 +133,11 @@ body {
     max-width: 700px !important;
     background-color: #121212;
     border-radius: 20px;
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     z-index: 500;
     display: none;
     flex-direction: column;
-    height: 200px !important;
+    height: calc(40% + 20px) !important;
     transition: height 0.3s ease-in-out;
     box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
     border: 1px solid #333;
@@ -159,6 +159,7 @@ body {
     margin-bottom: 10px;
     flex-shrink: 0;
     cursor: pointer;
+    background-color: #121212 !important;
 }
 
 .panel-rutas h3 {
@@ -173,7 +174,10 @@ body {
 .icono-flecha {
     transition: transform 0.3s ease-in-out;
     font-size: 1.2rem;
-    color: #d76cdc;
+    color: #ffffff !important;
+    background-color: #d76cdc;
+    border-radius: 7px;
+    padding: 5px;
 }
 
 .panel-rutas.oculto .icono-flecha {
@@ -253,8 +257,8 @@ body {
     width: 100% !important;
     max-width: 700px !important;
     height: 65px;
-    background: linear-gradient(to top, #2c0942, #1a1a1a);
-    border-radius: 20px;
+    background: linear-gradient(to top, #2c0942, #121212);
+    border-radius: 20px 0 0 0 ;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -442,7 +446,7 @@ body {
 }
 
     .btn-cancelar:hover {
-        background-color: #555; 
+        background-color: red; 
     }
 
 .btn-enviar {

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../CimaVioletaFrontend/CimaVioletaFrontend.csproj" />
+  <Project Path="CimaVioletaBackend.csproj" />
+</Solution>

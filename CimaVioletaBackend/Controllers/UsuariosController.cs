@@ -2,6 +2,7 @@
 using CimaVioletaBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions; // <-- IMPORTANTE PARA LA VALIDACIÓN
 
 namespace CimaVioletaBackend.Controllers
 {
@@ -18,6 +19,10 @@ namespace CimaVioletaBackend.Controllers
             if (string.IsNullOrWhiteSpace(req.Nombre) || string.IsNullOrWhiteSpace(req.Acceso) || string.IsNullOrWhiteSpace(req.Pass))
                 return BadRequest(new { ok = false, error = "Todos los campos son obligatorios." });
 
+            // VALIDACIÓN: Solo letras, números, guiones (-) y guiones bajos (_)
+            if (!Regex.IsMatch(req.Acceso, @"^[a-zA-Z0-9_-]+$"))
+                return BadRequest(new { ok = false, error = "El usuario solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni otros símbolos." });
+
             if (req.Acceso.Length > 30 || req.Nombre.Length > 100)
                 return BadRequest(new { ok = false, error = "El nombre de usuario o el nombre visible es demasiado largo." });
 
@@ -30,14 +35,17 @@ namespace CimaVioletaBackend.Controllers
                 nombre_acceso = req.Acceso,
                 contrasena_hash = req.Pass,
                 imagen_perfil = req.Foto,
-                es_admin = false
+                es_admin = false,
+                es_conductor = false,
+                bloqueado = false
             };
 
             _db.Usuarios.Add(nuevo);
             await _db.SaveChangesAsync();
 
-            return Ok(new { ok = true, mensaje = "Usuario creado c:." });
+            return Ok(new { ok = true, mensaje = "Usuario creado exitosamente." });
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto req)
         {
@@ -56,7 +64,7 @@ namespace CimaVioletaBackend.Controllers
                     user.imagen_perfil,
                     user.descripcion,
                     user.es_admin,
-                    user.es_conductor, // <--- ¡Asegúrate de que esté esto!// Dentro del return Ok de Login y Perfil, agrega:
+                    user.es_conductor,
                     user.bloqueado,
                     fecha = user.fecha_creacion.ToString("yyyy-MM-dd")
                 }

@@ -450,7 +450,7 @@ body {
 }
 
     .btn-cancelar:hover {
-        background-color: red;
+        background-color: red; 
     }
 
 .btn-enviar {

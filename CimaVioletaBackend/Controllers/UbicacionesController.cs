@@ -20,25 +20,24 @@ namespace CimaVioletaBackend.Controllers
 
             if (ubicacion == null)
             {
-                ubicacion = new UbicacionConductor
-                {
-                    id_conductor = id_conductor,
-                    estado_compartir = true,
-                    ultima_actualizacion = DateTime.Now
-                };
-                _db.UbicacionesConductores.Add(ubicacion);
+                // Insertar nuevo registro usando SQL puro para evitar triggers
+                await _db.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO UbicacionesConductores (id_conductor, estado_compartir, ultima_actualizacion) VALUES ({0}, 1, GETDATE())",
+                    id_conductor);
+                return Ok(new { ok = true, estado = true });
             }
             else
             {
-                ubicacion.estado_compartir = !ubicacion.estado_compartir;
-                ubicacion.ultima_actualizacion = DateTime.Now;
+                // Actualizar registro existente
+                bool nuevoEstado = !ubicacion.estado_compartir;
+                await _db.Database.ExecuteSqlRawAsync(
+                    "UPDATE UbicacionesConductores SET estado_compartir = {0}, ultima_actualizacion = GETDATE() WHERE id_conductor = {1}",
+                    nuevoEstado, id_conductor);
+                return Ok(new { ok = true, estado = nuevoEstado });
             }
-
-            await _db.SaveChangesAsync();
-            return Ok(new { ok = true, estado = ubicacion.estado_compartir });
         }
 
-        // 2. EL CONDUCTOR ENVÍA SUS COORDENADAS CADA 30 SEGUNDOS
+        // 2. EL CONDUCTOR ENVÍA SUS COORDENADAS (Usando el Stored Procedure)
         [HttpPost("actualizar")]
         public async Task<IActionResult> ActualizarUbicacion([FromBody] UbicacionDto req)
         {
@@ -46,11 +45,11 @@ namespace CimaVioletaBackend.Controllers
 
             if (ubicacion != null && ubicacion.estado_compartir)
             {
-                ubicacion.latitud = req.Latitud;
-                ubicacion.longitud = req.Longitud;
-                ubicacion.id_autobus = req.IdAutobus;
-                ubicacion.ultima_actualizacion = DateTime.Now;
-                await _db.SaveChangesAsync();
+                // Ejecutando tu SP que ya tienes en la base de datos
+                await _db.Database.ExecuteSqlRawAsync(
+                    "EXEC dbo.sp_ActualizarUbicacionConductor @id_conductor = {0}, @id_autobus = {1}, @latitud = {2}, @longitud = {3}, @compartir = 1",
+                    req.IdConductor, req.IdAutobus ?? 0, req.Latitud ?? 0.0, req.Longitud ?? 0.0
+                );
                 return Ok(new { ok = true, mensaje = "Ubicación actualizada" });
             }
 
@@ -108,13 +107,9 @@ namespace CimaVioletaBackend.Controllers
         [HttpPost("apagar/{id_conductor}")]
         public async Task<IActionResult> ApagarUbicacion(int id_conductor)
         {
-            var ubicacion = await _db.UbicacionesConductores.FindAsync(id_conductor);
-            if (ubicacion != null)
-            {
-                ubicacion.estado_compartir = false;
-                ubicacion.ultima_actualizacion = DateTime.Now;
-                await _db.SaveChangesAsync();
-            }
+            await _db.Database.ExecuteSqlRawAsync(
+                "UPDATE UbicacionesConductores SET estado_compartir = 0, ultima_actualizacion = GETDATE() WHERE id_conductor = {0}",
+                id_conductor);
             return Ok(new { ok = true });
         }
     }
@@ -122,8 +117,8 @@ namespace CimaVioletaBackend.Controllers
     public class UbicacionDto
     {
         public int IdConductor { get; set; }
-        public double? Latitud { get; set; }
-        public double? Longitud { get; set; }
+        public double? Latitud { get; set; }  // <-- Cambiado a double por el FLOAT de SQL
+        public double? Longitud { get; set; } // <-- Cambiado a double por el FLOAT de SQL
         public int? IdAutobus { get; set; }
     }
 }

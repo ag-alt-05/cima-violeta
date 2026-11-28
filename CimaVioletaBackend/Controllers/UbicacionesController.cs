@@ -112,6 +112,19 @@ namespace CimaVioletaBackend.Controllers
                 id_conductor);
             return Ok(new { ok = true });
         }
+        [HttpGet("estado/{id_conductor}")]
+        public async Task<IActionResult> ObtenerEstadoConductor(int id_conductor)
+        {
+            var ubicacion = await _db.UbicacionesConductores.FindAsync(id_conductor);
+            if (ubicacion == null) return Ok(new { ok = true, estado = false, id_autobus = 0 });
+
+            return Ok(new
+            {
+                ok = true,
+                estado = ubicacion.estado_compartir,
+                id_autobus = ubicacion.id_autobus ?? 0
+            });
+        }
     }
 
     public class UbicacionDto

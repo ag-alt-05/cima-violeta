@@ -2,7 +2,7 @@
 using CimaVioletaBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions; // <-- IMPORTANTE PARA LA VALIDACIÓN
+using System.Text.RegularExpressions;
 
 namespace CimaVioletaBackend.Controllers
 {
@@ -19,13 +19,14 @@ namespace CimaVioletaBackend.Controllers
             if (string.IsNullOrWhiteSpace(req.Nombre) || string.IsNullOrWhiteSpace(req.Acceso) || string.IsNullOrWhiteSpace(req.Pass))
                 return BadRequest(new { ok = false, error = "Todos los campos son obligatorios." });
 
-            // VALIDACIÓN: Solo letras, números, guiones (-) y guiones bajos (_)
-            if (!Regex.IsMatch(req.Acceso, @"^[a-zA-Z0-9_-]+$"))
-                return BadRequest(new { ok = false, error = "El usuario solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni otros símbolos." });
+            if (!Regex.IsMatch(req.Acceso, @"^[a-zA-Z0-9_-]+$")){
+                return BadRequest(new { ok = false, error = "El usuario solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni otros símbolos..." });
+            }
 
             if (req.Acceso.Length > 30 || req.Nombre.Length > 100)
+{
                 return BadRequest(new { ok = false, error = "El nombre de usuario o el nombre visible es demasiado largo." });
-
+}
             var existe = await _db.Usuarios.AnyAsync(u => u.nombre_acceso == req.Acceso);
             if (existe) return BadRequest(new { ok = false, error = "El nombre de usuario ya está en uso." });
 
@@ -51,7 +52,7 @@ namespace CimaVioletaBackend.Controllers
         {
             var user = await _db.Usuarios.FirstOrDefaultAsync(u => u.nombre_acceso == req.Acceso && u.contrasena_hash == req.Pass);
 
-            if (user == null) return Unauthorized(new { ok = false, error = "Usuario o contraseña incorrectos." });
+            if (user == null) return Unauthorized(new { ok = false, error = "Usuario o contraseña incorrectos" });
 
             return Ok(new
             {

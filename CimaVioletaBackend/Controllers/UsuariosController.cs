@@ -22,6 +22,7 @@ namespace CimaVioletaBackend.Controllers
             if (!Regex.IsMatch(req.Acceso, @"^[a-zA-Z0-9_-]+$")){
                 return BadRequest(new { ok = false, error = "El usuario solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni otros símbolos..." });
             }
+
             if (req.Acceso.Length > 30 || req.Nombre.Length > 100)
 {
                 return BadRequest(new { ok = false, error = "El nombre de usuario o el nombre visible es demasiado largo." });

@@ -16,7 +16,6 @@ namespace CimaVioletaBackend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // ESTO EVITA EL ERROR DE LOS TRIGGERS EN SQL SERVER
             modelBuilder.Entity<Comentario>().ToTable(tb => tb.UseSqlOutputClause(false));
             modelBuilder.Entity<VotoComentario>().ToTable(tb => tb.UseSqlOutputClause(false));
             modelBuilder.Entity<Usuario>().ToTable(tb => tb.UseSqlOutputClause(false));

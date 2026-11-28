@@ -9,6 +9,11 @@
 *.pdb
 *.cache
 
+# CONFIGURACIÓN Y SECRETOS (NO SUBIR)
+appsettings.json
+appsettings.*.json
+!appsettings.Development.json
+
 # PYTHON
 __pycache__/
 *.py[cod]
@@ -30,3 +35,4 @@ Desktop.ini
 # OTROS
 *.log
 *.sqlite
+CimaVioletaBackend/appsettings.json

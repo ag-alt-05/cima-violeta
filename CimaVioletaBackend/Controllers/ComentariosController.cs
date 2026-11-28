@@ -2,7 +2,6 @@
 using CimaVioletaBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
 using System.Text;
 using System.Text.Json;
 
@@ -20,7 +19,28 @@ namespace CimaVioletaBackend.Controllers
             _db = db;
             _logger = logger;
         }
+        [HttpGet("usuario/{nombre_acceso}")]
+        public async Task<IActionResult> ObtenerComentariosUsuario(string nombre_acceso)
+        {
+            var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.nombre_acceso == nombre_acceso);
+            if (usuario == null) return NotFound(new { ok = false });
 
+            var comentarios = await _db.Comentarios
+                .Where(c => c.id_usuario == usuario.id_usuario)
+                .Join(_db.Autobuses, c => c.id_autobus, a => a.id_autobus, (c, a) => new { c, a })
+                .OrderByDescending(x => x.c.fecha_creacion)
+                .Select(x => new {
+                    x.c.id_comentario,
+                    x.c.contenido,
+                    x.c.calificacion,
+                    x.c.es_aprobado,
+                    x.c.votos,
+                    fecha = x.c.fecha_creacion.ToString("dd/MM/yyyy"),
+                    autobus = x.a.nombre_autobus
+                }).ToListAsync();
+
+            return Ok(new { ok = true, comentarios });
+        }
         [HttpGet("{id_autobus}")]
         public async Task<IActionResult> ObtenerComentarios(int id_autobus, int skip = 0, int id_usuario = 0)
         {
@@ -32,8 +52,6 @@ namespace CimaVioletaBackend.Controllers
             }
 
             var query = _db.Comentarios.Where(c => c.id_autobus == id_autobus);
-
-            // Si NO es admin, solo ve los aprobados. Si es admin, ve todo.
             if (!esAdmin) query = query.Where(c => c.es_aprobado == true);
 
             var comentarios = await query
@@ -44,10 +62,6 @@ namespace CimaVioletaBackend.Controllers
                 .ToListAsync();
 
             var listaFinal = new List<object>();
-
-            var promedio = 0.0;
-            var total_aceptados = 0;
-
             foreach (var c in comentarios)
             {
                 string nombreAutor = "Anónimo";
@@ -71,44 +85,17 @@ namespace CimaVioletaBackend.Controllers
                     c.calificacion,
                     c.votos,
                     miVoto,
-                    c.es_aprobado, // <-- Enviamos si está aprobado para pintarlo de rojo
+                    c.es_aprobado,
                     fecha = c.fecha_creacion.ToString("dd/MM/yyyy"),
                     autor = nombreAutor,
                     es_anonimo = c.id_usuario == null
                 });
-                if(c.es_aprobado == true)
-                {
-                    promedio += c.calificacion;
-                    total_aceptados++;
-                }
             }
+
+            var promedio = await query.AverageAsync(c => (double?)c.calificacion) ?? 0.0;
             var total = await query.CountAsync();
-            promedio /= total_aceptados;
 
             return Ok(new { ok = true, comentarios = listaFinal, promedio = Math.Round(promedio, 1), total });
-        }
-
-        [HttpGet("usuario/{nombre_acceso}")]
-        public async Task<IActionResult> ObtenerComentariosUsuario(string nombre_acceso)
-        {
-            var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.nombre_acceso == nombre_acceso);
-            if (usuario == null) return NotFound(new { ok = false });
-
-            var comentarios = await _db.Comentarios
-                .Where(c => c.id_usuario == usuario.id_usuario)
-                .Join(_db.Autobuses, c => c.id_autobus, a => a.id_autobus, (c, a) => new { c, a })
-                .OrderByDescending(x => x.c.fecha_creacion)
-                .Select(x => new {
-                    x.c.id_comentario,
-                    x.c.contenido,
-                    x.c.calificacion,
-                    x.c.es_aprobado,
-                    x.c.votos, // <--- AGREGADO AQUÍ
-                    fecha = x.c.fecha_creacion.ToString("dd/MM/yyyy"),
-                    autobus = x.a.nombre_autobus
-                }).ToListAsync();
-
-            return Ok(new { ok = true, comentarios });
         }
 
         [HttpPost]
@@ -125,6 +112,10 @@ namespace CimaVioletaBackend.Controllers
 
             if (req.Contenido.Length > 500)
                 return BadRequest(new { ok = false, error = "Excede los 500 caracteres." });
+
+            // VALIDACIÓN CRÍTICA PARA EL CHECK CONSTRAINT DE SQL SERVER
+            if (req.Calificacion < 1 || req.Calificacion > 5)
+                return BadRequest(new { ok = false, error = "La calificación debe ser entre 1 y 5 estrellas." });
 
             bool? estadoAprobacion = null;
             int? toxicidad = null;
@@ -152,7 +143,7 @@ namespace CimaVioletaBackend.Controllers
                 calificacion = req.Calificacion,
                 es_aprobado = estadoAprobacion,
                 nivel_toxicidad = toxicidad,
-                votos = 0 // INICIA EN 0
+                votos = 0
             };
 
             _db.Comentarios.Add(nuevo);
@@ -169,24 +160,24 @@ namespace CimaVioletaBackend.Controllers
             if (comentario == null) return NotFound();
 
             var votoExistente = await _db.VotosComentarios.FirstOrDefaultAsync(v => v.id_comentario == req.IdComentario && v.id_usuario == req.IdUsuario);
-            int nuevoVotoUsuario = 0; // 0 significa que quitó su voto
+            int nuevoVotoUsuario = 0;
 
             if (votoExistente != null)
             {
-                if (votoExistente.valor == req.Valor) // Si da clic en el mismo, quita el voto
+                if (votoExistente.valor == req.Valor) // Quitar voto
                 {
                     _db.VotosComentarios.Remove(votoExistente);
                     comentario.votos -= req.Valor;
                 }
-                else // Si cambia de upvote a downvote o viceversa
+                else // Cambiar voto
                 {
-                    comentario.votos -= votoExistente.valor; // Quita el voto anterior
-                    comentario.votos += req.Valor;           // Suma el nuevo
+                    comentario.votos -= votoExistente.valor;
+                    comentario.votos += req.Valor;
                     votoExistente.valor = req.Valor;
                     nuevoVotoUsuario = req.Valor;
                 }
             }
-            else
+            else // Voto nuevo
             {
                 _db.VotosComentarios.Add(new VotoComentario { id_comentario = req.IdComentario, id_usuario = req.IdUsuario, valor = req.Valor });
                 comentario.votos += req.Valor;
@@ -198,20 +189,6 @@ namespace CimaVioletaBackend.Controllers
         }
 
         public class VotoDto { public int IdComentario { get; set; } public int IdUsuario { get; set; } public int Valor { get; set; } }
-
-        [HttpDelete("{id_comentario}/{nombre_acceso}")]
-        public async Task<IActionResult> EliminarComentario(int id_comentario, string nombre_acceso)
-        {
-            var admin = await _db.Usuarios.FirstOrDefaultAsync(u => u.nombre_acceso == nombre_acceso);
-            if (admin == null || !admin.es_admin) return Unauthorized(new { ok = false, error = "Sin permisos." });
-
-            var comentario = await _db.Comentarios.FindAsync(id_comentario);
-            if (comentario == null) return NotFound();
-
-            _db.Comentarios.Remove(comentario);
-            await _db.SaveChangesAsync();
-            return Ok(new { ok = true });
-        }
 
         [HttpPut("estado/{id_comentario}")]
         public async Task<IActionResult> CambiarEstado(int id_comentario, [FromBody] EstadoDto req)
@@ -228,6 +205,21 @@ namespace CimaVioletaBackend.Controllers
         }
 
         public class EstadoDto { public bool Aprobado { get; set; } public string NombreAdmin { get; set; } }
+
+        [HttpDelete("{id_comentario}/{nombre_acceso}")]
+        public async Task<IActionResult> EliminarComentario(int id_comentario, string nombre_acceso)
+        {
+            var admin = await _db.Usuarios.FirstOrDefaultAsync(u => u.nombre_acceso == nombre_acceso);
+            if (admin == null || !admin.es_admin) return Unauthorized(new { ok = false, error = "Sin permisos." });
+
+            var comentario = await _db.Comentarios.FindAsync(id_comentario);
+            if (comentario == null) return NotFound();
+
+            _db.Comentarios.Remove(comentario);
+            await _db.SaveChangesAsync();
+            return Ok(new { ok = true });
+        }
+
         private async Task<int?> ObtenerNivelToxicidad(string texto)
         {
             try
@@ -245,6 +237,8 @@ namespace CimaVioletaBackend.Controllers
             }
             catch { return null; }
         }
+
     }
     public class ComentarioDto { public int IdAutobus { get; set; } public int? IdUsuario { get; set; } public string Contenido { get; set; } = string.Empty; public int Calificacion { get; set; } }
+
 }
